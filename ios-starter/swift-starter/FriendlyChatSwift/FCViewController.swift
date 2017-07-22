@@ -126,6 +126,7 @@ class FCViewController: UIViewController, UITableViewDataSource, UITableViewDele
 
   @IBAction func didSendMessage(_ sender: UIButton) {
     _ = textFieldShouldReturn(textField)
+    MeasurementHelper.sendMessageEvent()
   }
 
   @IBAction func didPressCrash(_ sender: AnyObject) {
@@ -296,6 +297,7 @@ class FCViewController: UIViewController, UITableViewDataSource, UITableViewDele
     let firebaseAuth = Auth.auth()
     do {
       try firebaseAuth.signOut()
+      MeasurementHelper.sendLogoutEvent()
       dismiss(animated: true, completion: nil)
     } catch let signOutError as NSError {
       print ("Error signing out: \(signOutError.localizedDescription)")
