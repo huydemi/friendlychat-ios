@@ -130,6 +130,7 @@ class FCViewController: UIViewController, UITableViewDataSource, UITableViewDele
   }
 
   @IBAction func didPressCrash(_ sender: AnyObject) {
+    FirebaseCrashMessage("Cause Crash button clicked")
     fatalError()
   }
 
@@ -161,6 +162,7 @@ class FCViewController: UIViewController, UITableViewDataSource, UITableViewDele
   }
   
   func logViewLoaded() {
+    FirebaseCrashMessage("View loaded")
   }
 
   func loadAd() {
