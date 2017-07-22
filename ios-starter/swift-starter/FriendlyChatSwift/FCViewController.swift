@@ -80,9 +80,44 @@ class FCViewController: UIViewController, UITableViewDataSource, UITableViewDele
   }
 
   func configureRemoteConfig() {
+    remoteConfig = RemoteConfig.remoteConfig()
+    // Create Remote Config Setting to enable developer mode.
+    // Fetching configs from the server is normally limited to 5 requests per hour.
+    // Enabling developer mode allows many more requests to be made per hour, so developers
+    // can test different config values during development.
+    let remoteConfigSettings = RemoteConfigSettings(developerModeEnabled: true)
+    remoteConfig.configSettings = remoteConfigSettings!
   }
 
   func fetchConfig() {
+    var expirationDuration: TimeInterval = 3600
+    // If in developer mode cacheExpiration is set to 0 so each fetch will retrieve values from
+    // the server.
+    if self.remoteConfig.configSettings.isDeveloperModeEnabled {
+      expirationDuration = 0
+    }
+    
+    // cacheExpirationSeconds is set to cacheExpiration here, indicating that any previously
+    // fetched and cached config would be considered expired because it would have been fetched
+    // more than cacheExpiration seconds ago. Thus the next fetch would go to the server unless
+    // throttling is in progress. The default expiration duration is 43200 (12 hours).
+    remoteConfig.fetch(withExpirationDuration: expirationDuration) { [weak self] (status, error) in
+      if status == .success {
+        print("Config fetched!")
+        guard let strongSelf = self else { return }
+        strongSelf.remoteConfig.activateFetched()
+        let friendlyMsgLength = strongSelf.remoteConfig["friendly_msg_length"]
+        if friendlyMsgLength.source != .static {
+          strongSelf.msglength = friendlyMsgLength.numberValue!
+          print("Friendly msg length config: \(strongSelf.msglength)")
+        }
+      } else {
+        print("Config not fetched")
+        if let error = error {
+          print("Error \(error)")
+        }
+      }
+    }
   }
 
   @IBAction func didPressFreshConfig(_ sender: AnyObject) {
